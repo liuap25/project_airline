@@ -15,6 +15,11 @@ public class ViajeService {
     }
 
     public List<Viaje> consultarViajesDisponibles() {
-        return viajeRepository.findAll(); // Retorna todos los viajes disponibles
+        return viajeRepository.findAll();
+    }
+
+    // 📌 Método para guardar un nuevo viaje
+    public Viaje crearViaje(Viaje viaje) {
+        return viajeRepository.save(viaje);
     }
 }

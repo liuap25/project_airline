@@ -27,6 +27,9 @@ public class Viaje {
     @Column(name = "precio_base")
     private BigDecimal precioBase;
 
+    @Column(name = "imagen", length = 500) 
+    private String imagen;
+
     @OneToMany(mappedBy = "viajeAsignado")
     private List<Avion> avionesDisponibles;
 
