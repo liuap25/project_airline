@@ -10,12 +10,15 @@ import com.example.project.airline.repositories.ViajeRepository;
 import com.example.project.airline.repositories.AvionRepository;
 import com.example.project.airline.security.JwtUtil;
 import com.example.project.airline.DTO.ReservaRequest;
+import com.example.project.airline.DTO.ReservaResponseDTO;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservaService {
@@ -24,7 +27,7 @@ public class ReservaService {
     private final ClienteRepository clienteRepository;
     private final ViajeRepository viajeRepository;
     private final AvionRepository avionRepository;
-    private final JwtUtil jwtUtil; // Clase para manejar JWT
+    private final JwtUtil jwtUtil;
 
     public ReservaService(ReservaRepository reservaRepository, ClienteRepository clienteRepository,
                           ViajeRepository viajeRepository, AvionRepository avionRepository,
@@ -37,25 +40,25 @@ public class ReservaService {
     }
 
     @Transactional
-    public Reserva registrarReserva(ReservaRequest request, String token) {
+    public ReservaResponseDTO registrarReserva(ReservaRequest request, String token) {
         // Obtener ID del cliente desde el token JWT
         Long clienteId = jwtUtil.getClienteIdFromToken(token);
         Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-
+    
         // Obtener viaje y avión
         Viaje viaje = viajeRepository.findById(request.getViajeId())
                 .orElseThrow(() -> new RuntimeException("Viaje no encontrado"));
-
+    
         Avion avion = avionRepository.findById(request.getAvionId())
                 .orElseThrow(() -> new RuntimeException("Avión no encontrado"));
-
+    
         // Calcular precio total
         BigDecimal precioTotal = viaje.getPrecioBase().multiply(BigDecimal.valueOf(request.getCantidadPersonas()));
-
+    
         // Generar código de reserva aleatorio
         String codigoReserva = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-
+    
         // Crear la reserva
         Reserva reserva = new Reserva();
         reserva.setCliente(cliente);
@@ -64,7 +67,38 @@ public class ReservaService {
         reserva.setCantidadPersonas(request.getCantidadPersonas());
         reserva.setPrecioTotal(precioTotal);
         reserva.setCodigoReserva(codigoReserva);
-
-        return reservaRepository.save(reserva);
+    
+        reservaRepository.save(reserva);
+    
+        // Retornar DTO con el nombre del cliente
+        return new ReservaResponseDTO(
+                cliente.getNombre(),  // Reemplazamos ID por el nombre del cliente
+                viaje.getCategoria(),
+                viaje.getCiudadDestino(),
+                viaje.getFechaIda(),
+                avion.getHorarioDesignado(),
+                avion.getHorasSalida(),
+                reserva.getCantidadPersonas(),
+                reserva.getPrecioTotal(),
+                reserva.getCodigoReserva()
+        );
+    }
+    
+    @Transactional(readOnly = true)
+    public List<ReservaResponseDTO> obtenerTodasLasReservas() {
+        List<Reserva> reservas = reservaRepository.findAll();
+        return reservas.stream().map(reserva -> new ReservaResponseDTO(
+                reserva.getCliente().getNombre(), // Ahora devuelve el nombre del cliente
+                reserva.getViaje().getCategoria(),
+                reserva.getViaje().getCiudadDestino(),
+                reserva.getViaje().getFechaIda(),
+                reserva.getAvion().getHorarioDesignado(),
+                reserva.getAvion().getHorasSalida(),
+                reserva.getCantidadPersonas(),
+                reserva.getPrecioTotal(),
+                reserva.getCodigoReserva()
+        )).collect(Collectors.toList());
     }
 }
+    
+

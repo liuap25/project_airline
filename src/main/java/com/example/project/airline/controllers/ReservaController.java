@@ -1,11 +1,13 @@
 package com.example.project.airline.controllers;
 
-import com.example.project.airline.models.Reserva;
 import com.example.project.airline.DTO.ReservaRequest;
+import com.example.project.airline.DTO.ReservaResponseDTO;
 import com.example.project.airline.services.ReservaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/reservas")
@@ -25,14 +27,19 @@ public class ReservaController {
             if (token.startsWith("Bearer ")) {
                 token = token.substring(7); // Remueve "Bearer " y deja solo el token
             }
-    
-            Reserva reserva = reservaService.registrarReserva(reservaRequest, token);
-            return ResponseEntity.ok(reserva);
+
+            ReservaResponseDTO reservaResponse = reservaService.registrarReserva(reservaRequest, token);
+            return ResponseEntity.ok(reservaResponse);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    
+
+    @GetMapping("/listar")
+    public ResponseEntity<List<ReservaResponseDTO>> obtenerTodasLasReservas() {
+        List<ReservaResponseDTO> reservas = reservaService.obtenerTodasLasReservas();
+        return ResponseEntity.ok(reservas);
+    }
 }
 
 

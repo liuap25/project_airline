@@ -1,5 +1,6 @@
 package com.example.project.airline.controllers;
 
+import com.example.project.airline.DTO.ViajeResponseDTO;
 import com.example.project.airline.models.Viaje;
 import com.example.project.airline.services.ViajeService;
 
@@ -20,12 +21,12 @@ public class ViajeController {
     }
 
     @GetMapping("/disponibles")
-    public ResponseEntity<List<Viaje>> consultarViajesDisponibles() {
-        List<Viaje> viajes = viajeService.consultarViajesDisponibles();
+    public ResponseEntity<List<ViajeResponseDTO>> consultarViajesDisponibles() {
+        List<ViajeResponseDTO> viajes = viajeService.consultarViajesDisponibles();
         return ResponseEntity.ok(viajes);
     }
 
-     @PostMapping("/crear")
+    @PostMapping("/crear")
     public ResponseEntity<Viaje> crearViaje(@RequestBody Viaje nuevoViaje) {
         Viaje viajeGuardado = viajeService.crearViaje(nuevoViaje);
         return ResponseEntity.status(HttpStatus.CREATED).body(viajeGuardado);
