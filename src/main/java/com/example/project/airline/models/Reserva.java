@@ -5,6 +5,9 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+
 @Entity
 @Table(name = "reservas")
 @Getter
@@ -16,30 +19,20 @@ public class Reserva {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonBackReference
     @ManyToOne
-    @JoinColumn(name = "cliente_id")
+    @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
     @ManyToOne
-    @JoinColumn(name = "viaje_id")
+    @JoinColumn(name = "viaje_id", nullable = false)
     private Viaje viaje;
 
     @ManyToOne
-    @JoinColumn(name = "aeropuerto_id")
-    private Aeropuerto aeropuerto;
+    @JoinColumn(name = "avion_id", nullable = false)
+    private Avion avion;
 
     private int cantidadPersonas;
-    private String horarioPreferido;
-    private String horaPartida;
-
-    @ManyToOne
-    @JoinColumn(name = "avion_id")
-    private Avion avionAsignado;
-
-    @Column(name = "precio_total")
     private BigDecimal precioTotal;
-
-    public void calcularPrecioTotal() {
-        this.precioTotal = viaje.calcularPrecio(cantidadPersonas);
-    }
+    private String codigoReserva;
 }

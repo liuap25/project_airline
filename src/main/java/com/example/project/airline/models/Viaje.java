@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Entity
 @Table(name = "viajes")
 @Getter
@@ -31,6 +33,7 @@ public class Viaje {
     private String imagen;
 
     @OneToMany(mappedBy = "viajeAsignado")
+    @JsonManagedReference
     private List<Avion> avionesDisponibles;
 
     public BigDecimal calcularPrecio(int cantidadPersonas) {

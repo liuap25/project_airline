@@ -5,6 +5,9 @@ import lombok.*;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+
 @Entity
 @Table(name = "aviones")
 @Getter
@@ -25,9 +28,11 @@ public class Avion {
 
     @ManyToOne
     @JoinColumn(name = "viaje_id")
+    @JsonBackReference
     private Viaje viajeAsignado;
 
     public boolean consultarDisponibilidad() {
         return viajeAsignado == null;
     }
 }
+
