@@ -6,6 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import org.springframework.stereotype.Component;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class JwtUtil {
@@ -18,6 +19,7 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    // Generar un token JWT
     public String generarToken(Long clienteId) {
         return Jwts.builder()
                 .subject(String.valueOf(clienteId))
@@ -27,6 +29,7 @@ public class JwtUtil {
                 .compact();
     }
     
+    // Obtener el ID del cliente desde el token JWT
     public Long getClienteIdFromToken(String token) {
         String subject = Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -35,5 +38,14 @@ public class JwtUtil {
                 .getPayload()
                 .getSubject();
         return Long.parseLong(subject);
+    }
+
+    // 📌 Nuevo método para extraer el token del header Authorization
+    public String extractToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7); // Quitar "Bearer "
+        }
+        return null;
     }
 }

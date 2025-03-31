@@ -19,15 +19,17 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final ClienteRepository clienteRepository;
+    private final TokenBlacklist tokenBlacklist; 
 
-    public SecurityConfig(JwtUtil jwtUtil, ClienteRepository clienteRepository) {
+    public SecurityConfig(JwtUtil jwtUtil, ClienteRepository clienteRepository, TokenBlacklist tokenBlacklist) {
         this.jwtUtil = jwtUtil;
         this.clienteRepository = clienteRepository;
+        this.tokenBlacklist = tokenBlacklist;
     }
-
+    
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtUtil, clienteRepository);
+        return new JwtAuthenticationFilter(jwtUtil, clienteRepository, tokenBlacklist); // <-- Pasar el nuevo argumento
     }
 
     @Bean

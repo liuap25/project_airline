@@ -18,31 +18,41 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final ClienteRepository clienteRepository;
+    private final TokenBlacklist tokenBlacklist;  // Inyectamos la lista negra
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, ClienteRepository clienteRepository) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, ClienteRepository clienteRepository, TokenBlacklist tokenBlacklist) {
         this.jwtUtil = jwtUtil;
         this.clienteRepository = clienteRepository;
+        this.tokenBlacklist = tokenBlacklist;
     }
 
     @Override
     protected void doFilterInternal(
-            @NonNull HttpServletRequest request, 
-            @NonNull HttpServletResponse response, 
-            @NonNull FilterChain filterChain) 
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        
+
         // Obtener el token del header Authorization
         String header = request.getHeader("Authorization");
-        
+
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7); // Quitar "Bearer "
+
+            // Verificar si el token ha sido revocado
+            if (tokenBlacklist.isTokenBlacklisted(token)) { 
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
+                response.getWriter().write("Token revocado, por favor inicie sesión nuevamente.");
+                return;
+            }
+
             try {
                 Long clienteId = jwtUtil.getClienteIdFromToken(token);
                 Optional<Cliente> clienteOpt = clienteRepository.findById(clienteId);
-                
+
                 if (clienteOpt.isPresent()) {
                     Cliente cliente = clienteOpt.get();
-                    UsernamePasswordAuthenticationToken auth = 
+                    UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(cliente, null, cliente.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
@@ -51,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 logger.error("Error al validar token JWT: " + e.getMessage());
             }
         }
-        
+
         filterChain.doFilter(request, response);
     }
 }
